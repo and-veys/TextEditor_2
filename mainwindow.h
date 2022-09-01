@@ -34,5 +34,17 @@ private:
      MyTextEdit * getActivTextEdit();
      void setTextEditTitle(MyTextEdit * txt, QMdiSubWindow * w=nullptr);
 
+//HW #7 --------------------------------------------------------------------
+
+     void setMyFont();
+     void setMyColor();
+     void setMyStyle();
+     void getMyStyle();
+     void setAlign(Qt::AlignmentFlag al);
+
+     QTextCharFormat * buffer_format;
+
+//--------------------------------------------------------------------------
+
 };
 #endif // MAINWINDOW_H
