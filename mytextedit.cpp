@@ -1,7 +1,5 @@
 #include "mytextedit.h"
-
 #include <QFile>
-
 
 MyTextEdit::MyTextEdit(QWidget * parent, const QString & nm) : QTextEdit(parent), file_name(nm)
 {
@@ -70,4 +68,3 @@ bool MyTextEdit::write(const QString &nm)
     }
     return false;
 }
-

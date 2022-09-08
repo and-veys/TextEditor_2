@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "findthread.h"
 #include "mytextedit.h"
 #include "mytreewidget.h"
 
@@ -8,6 +9,7 @@
 #include <QLabel>
 #include <QMainWindow>
 #include <QMdiArea>
+#include <QPushButton>
 
 
 class MainWindow : public QMainWindow
@@ -33,17 +35,19 @@ private:
      void print();
      MyTextEdit * getActivTextEdit();
      void setTextEditTitle(MyTextEdit * txt, QMdiSubWindow * w=nullptr);
-
-//HW #7 --------------------------------------------------------------------
-
      void setMyFont();
      void setMyColor();
      void setMyStyle();
      void getMyStyle();
      void setAlign(Qt::AlignmentFlag al);
-
      QTextCharFormat * buffer_format;
 
+//HW #8 --------------------------------------------------------------------
+     void insertDateTime();
+     void findDirFiles();
+     void stopFindThread();
+     FindThread finder;
+     QLineEdit * text_find;
 //--------------------------------------------------------------------------
 
 };

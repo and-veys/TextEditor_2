@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "mytextedit.h"
+#include "findthread.h"
 
 #include <QDockWidget>
 #include <QMenu>
@@ -13,7 +14,9 @@
 #include <QColorDialog>
 #include <QFontDialog>
 #include <QTextList>
-
+#include <QDateTime>
+#include <QLineEdit>
+#include <QHBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -32,7 +35,6 @@ MainWindow::MainWindow(QWidget *parent)
     menu->addAction("&Help", [this]{help();});
     menuBar()->addMenu(menu);
 
-//HW #7 --------------------------------------------------------------------
     menu = new QMenu("Fo&rmat");
     menu->addAction("&Font", [this]{setMyFont();});
     menu->addAction("Colo&r", [this]{setMyColor();});
@@ -51,7 +53,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     menuBar()->addMenu(menu);
     buffer_format = nullptr;
-//--------------------------------------------------------------------------
+
 
     tree = new MyTreeWidget(this);
     QDockWidget * dock = new QDockWidget(this);
@@ -59,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
     addDockWidget(Qt::LeftDockWidgetArea, dock);
 
     model_file_system.setFilter(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files);
-    model_file_system.setRootPath("C:/");
+    model_file_system.setRootPath("");
     tree->setModel(&model_file_system);
     for (int i = 1; i < model_file_system.columnCount(); ++i)
         tree->hideColumn(i);
@@ -67,19 +69,45 @@ MainWindow::MainWindow(QWidget *parent)
     mdi = new QMdiArea(this);
     setCentralWidget(mdi);
 
-    label = new QLabel(this);
-    QStatusBar * bar = statusBar();
-    bar->addWidget(label);
+
 
     connect(tree, &QTreeView::clicked, this, &MainWindow::onClickTree);
+
+
+//HW #8 ---------------------------------------------------------------------
+        menu = new QMenu("I&nsert");
+        menu->addAction("&Data and Time", [this]{insertDateTime();});
+        menuBar()->addMenu(menu);
+
+        label = new QLabel(this);
+        label->setText(QDir::drives()[0].path());
+        text_find = new QLineEdit(this);
+        text_find->setMinimumSize(text_find->sizeHint());
+
+        QPushButton * button_find = new QPushButton(this);
+        button_find->setText("Find");
+        button_find->setMinimumSize(button_find->sizeHint());
+
+        QPushButton * button_stop = new QPushButton(this);
+        button_stop->setText("Stop");
+        button_stop->setMinimumSize(button_find->sizeHint());
+
+        QStatusBar * bar = statusBar();
+        bar->addWidget(label, 1);
+        bar->addWidget(text_find);
+        bar->addWidget(button_find);
+        bar->addWidget(button_stop);
+
+        connect(button_find, &QPushButton::clicked, this, &MainWindow::findDirFiles);
+        connect(button_stop, &QPushButton::clicked, this, &MainWindow::stopFindThread);
+//--------------------------------------------------------------------------
+
 }
 
 MainWindow::~MainWindow()
 {
     delete(buffer_format);
 }
-
-//HW #7 --------------------------------------------------------------------
 
 void MainWindow::setMyFont()
 {
@@ -131,6 +159,35 @@ void MainWindow::setAlign(Qt::AlignmentFlag al)
     if(txt == nullptr)
         return;
     txt->setAlignment(al);
+}
+
+//HW #8 --------------------------------------------------------------------
+
+void MainWindow::insertDateTime()
+{
+    MyTextEdit * txt = getActivTextEdit();
+    if(txt == nullptr)
+        return;
+    QDateTime dt = QDateTime::currentDateTime();
+    txt->textCursor().insertText(dt.toString("< dd.MM.yyyy hh:mm:ss >"));
+}
+
+void MainWindow::findDirFiles()
+{
+    if(finder.isRunning())
+        return;
+    MyTextEdit * txt = new MyTextEdit(this);
+    mdi->addSubWindow(txt);
+    txt->setReadOnly(true);
+    txt->show();
+    connect(&finder, &FindThread::print, txt, &MyTextEdit::append);
+    connect(&finder, &FindThread::title, txt, &MyTextEdit::setWindowTitle);
+    finder.start(text_find->text(), label->text());
+}
+
+void MainWindow::stopFindThread()
+{
+    finder.stop();
 }
 
 //--------------------------------------------------------------------------
